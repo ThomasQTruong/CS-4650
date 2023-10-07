@@ -19,10 +19,10 @@ class RowColumnLowHigh(MRJob):
   def mapper(self, _, line):
     """Extracts data from a line and maps it."""
 
-    # Get rid of whitespace, split into array by comma, and int cast 3rd item.
-    cleanedLine = line.replace(" ", "")
-    cleanedLine = cleanedLine.split(",")
-    cleanedLine[2] = int(cleanedLine[2])
+    # Clean up the data.
+    cleanedLine = line.replace(" ", "")      # Remove whitespaces.
+    cleanedLine = cleanedLine.split(",")     # Split into array.
+    cleanedLine[2] = int(cleanedLine[2])     # Make int.
 
     # Check for valid data.
     if (not cleanedLine[0].isalpha()):
@@ -32,7 +32,13 @@ class RowColumnLowHigh(MRJob):
     if (cleanedLine[2] < 0 or cleanedLine[2] > 999):
       return
 
-    yield (cleanedLine[0], cleanedLine[1]), cleanedLine[2]
+    # Cleaning part 2: make uppercase if needed.
+    cleanedLine[0] = cleanedLine[0].upper()
+    cleanedLine[1] = cleanedLine[1].upper()
+
+    # Return column/row with number.
+    yield cleanedLine[0], cleanedLine[2]
+    yield cleanedLine[1], cleanedLine[2]
 
 
   # Step 4: create reducer (output: data -> console/file/etc).
@@ -42,8 +48,15 @@ class RowColumnLowHigh(MRJob):
     For every column, print high.
     For every row, print low.
     """
-    for data in values:
-      yield key, data 
+
+    # Convert and check letter based on ASCII.
+    asciiKey = ord(key)
+    # A-J = column (max).
+    if (asciiKey >= 65 and asciiKey <= 74):
+      yield key, max(values)
+    # K-Z = row (min).
+    else:
+      yield key, min(values)
 
 
 # Step 5: set up main to run program.
