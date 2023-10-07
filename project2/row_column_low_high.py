@@ -36,6 +36,10 @@ class RowColumnLowHigh(MRJob):
     cleanedLine[0] = cleanedLine[0].upper()
     cleanedLine[1] = cleanedLine[1].upper()
 
+    # Check part 2: A-T only.
+    if (ord(cleanedLine[1]) > 84):
+      return
+
     # Return column/row with number.
     yield cleanedLine[0], cleanedLine[2]
     yield cleanedLine[1], cleanedLine[2]
@@ -54,7 +58,7 @@ class RowColumnLowHigh(MRJob):
     # A-J = column (max).
     if (asciiKey >= 65 and asciiKey <= 74):
       yield key, max(values)
-    # K-Z = row (min).
+    # K-T = row (min).
     else:
       yield key, min(values)
 

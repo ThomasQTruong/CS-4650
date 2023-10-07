@@ -1,5 +1,5 @@
 # Step 0: create a new file (lower cased + underscored).
-"""row_column_min_max.py
+"""rows_columns_min_max.py
 
 For every column, print max and the row(s) that have the max.
 For every row, print the min and the column(s) that have the min.
@@ -10,7 +10,7 @@ from mrjob.job import MRJob
 
 
 # Step 2: create a class that inherits from MRJob.
-class RowColumnMinMax(MRJob):
+class RowsColumnsMinMax(MRJob):
   """Extracts data from a file.
 
   Prints the column with the largest value,
@@ -64,23 +64,36 @@ class RowColumnMinMax(MRJob):
     # Indicates whether key is a column or a row.
     isKeyColumn = (asciiKey >= 65 and asciiKey <= 74)
 
-    min_max = next(values)
+    # Tracker variables.
+    current_iterator = next(values)
+    current_value = current_iterator[1]
+    value_list = [current_iterator[0]]
 
+    # For every value in values.
+    for v in values:
+      # Equal, append to value_list.
+      if v[1] == current_value:
+        value_list.append(v[0])
+      # Is a column, check for max.
+      elif (isKeyColumn):
+        # v[1] is new max.
+        if v[1] > current_value:
+          current_value = v[1]
+          value_list = [v[0]]  # Reset list to the new max only.
+      # Is a row, check for min.
+      else:
+        # v[1] is new min.
+        if v[1] < current_value:
+          current_value = v[1]
+          value_list = [v[0]]  # Reset list to the new min only.
+    
     # Print based on column/row.
     if (isKeyColumn):
-      # Is column, get max.
-      for v in values:
-        if v[1] > min_max[1]:
-          min_max = v
-      yield key, {"value": min_max[1], "row": min_max[0]}
+      yield key, {"value": current_value, "row(s)": value_list}
     else:
-      # Is row, get min.
-      for v in values:
-        if v[1] < min_max[1]:
-          min_max = v
-      yield key, {"value": min_max[1], "col": min_max[0]}
+      yield key, {"value": current_value, "col(s)": value_list}
 
 
 # Step 5: set up main to run program.
 if __name__ == "__main__":
-  RowColumnMinMax.run()
+  RowsColumnsMinMax.run()
